@@ -11,10 +11,10 @@
  */
 
 #include "main.h"
-#include "utils/utils.h"
-#include "headers/constants.h"
-#include "pid/pid.h"
-#include "headers/operator.h"
+#include "utils.h"
+#include "constants.h"
+#include "pid.h"
+#include "operator.h"
 
 
 void operatorControl() {

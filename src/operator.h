@@ -1,7 +1,7 @@
 #ifndef OPERATOR_H_
 #include "main.h"
 #include "constants.h"
-#include "../utils/utils.h"
+#include "utils.h"
 
 #define OPERATOR_H_
 

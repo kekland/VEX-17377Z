@@ -1,4 +1,4 @@
-#include "headers/operator.h"
+#include "operator.h"
 
 void controlBaseJoystick() {
 	int leftSpeed = joystickGetAnalog(1, 3);
