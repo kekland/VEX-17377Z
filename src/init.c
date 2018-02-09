@@ -23,7 +23,7 @@
 void initializeIO() {
 
 }
-int selectedAutonomous = 0;
+int selectedAutonomous = -1;
 int currentPage = 0;
 int maxPages = 3;
 int autonomousCount = 2;
@@ -44,9 +44,15 @@ char* autonomousNames[] = {"Auto 1", "Auto 2"};
 
 void lcd_clicked(int direction) {
   if(direction == 0 && currentPage < autonomousCount) {
-    selectedAutonomous = currentPage;
+    if(selectedAutonomous == -1) {
+      selectedAutonomous = currentPage;
+    }
+    else {
+      selectedAutonomous = -1;
+    }
     return;
   }
+
 
   if(currentPage + direction >= 0 && currentPage + direction < maxPages) {
     currentPage += direction;
@@ -56,11 +62,15 @@ void lcd_clicked(int direction) {
 void show_lcd_page() {
   //________________
   //Auto 1
-  //Sel: Auto 2
+  //
   //PWR_MAIN:40002mV
   //PWR_BACK:0mV
+  if(selectedAutonomous != -1) {
+    write_text("SELECTED: ", autonomousNames[selectedAutonomous]);
+    return;
+  }
   if(currentPage < autonomousCount) {
-    write_text(autonomousNames[currentPage], autonomousNames[selectedAutonomous]);
+    write_text(autonomousNames[currentPage], "<    SELECT    >");
   }
   else if(currentPage >= autonomousCount) {
     int pageIndex = autonomousCount - currentPage;
@@ -85,5 +95,8 @@ void initialize() {
       lcd_clicked(1);
     }
     show_lcd_page();
+  }
+  if(selectedAutonomous == -1) {
+    selectedAutonomous = 0;
   }
 }
