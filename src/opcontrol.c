@@ -21,6 +21,7 @@ void operatorControl() {
 	//pid_encoders[0] = encoderInit(1, 2, false);
 	while (true) {
 		controlAll();
+		updateSlewController();
 		delay(10);
 	}
 }
