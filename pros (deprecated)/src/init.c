@@ -82,8 +82,16 @@ void show_lcd_page() {
   }
 }
 
-void initialize() {
-  while(!isEnabled()) {
+TaskHandle autonomousHandler;
+void lcdSelector(void* params) {
+
+  if(selectedAutonomous == -1) {
+    selectedAutonomous = 0;
+  }
+}
+
+void initialize() {/*
+  while(selectedAutonomous == -1) {
     update_lcd_buttons();
     if(buttonUp[1]) {
       lcd_clicked(0);
@@ -95,8 +103,5 @@ void initialize() {
       lcd_clicked(1);
     }
     show_lcd_page();
-  }
-  if(selectedAutonomous == -1) {
-    selectedAutonomous = 0;
-  }
+  }*/
 }

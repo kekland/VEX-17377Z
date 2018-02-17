@@ -19,6 +19,8 @@ void setMotorSpeed(int pin, float speed) {
 	}
 }
 
+int slewRateDifferenceMultiplier = 2;
+
 void updateSlewController() {
 	if(!useSlewRate) {
 		return;
@@ -31,7 +33,7 @@ void updateSlewController() {
 		else if(difference < 0) { difference = -1; }
 		else { difference = 0; }
 
-		motorSet(i + 1, previousMotorValue + difference);
+		motorSet(i + 1, previousMotorValue + difference * slewRateDifferenceMultiplier);
 	}
 }
 

@@ -1,7 +1,6 @@
 #ifndef LCD_H_
 #include <stdbool.h>
 #define LCD_H_
-#define LCD_PORT uart2
 
 extern bool buttonPressed[];
 extern bool buttonUp[];

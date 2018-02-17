@@ -1,6 +1,6 @@
 /** @file opcontrol.c
  * @brief File for operator control code
- *v
+ *
  * This file should contain the user operatorControl() function and any functions related to it.
  *
  * Any copyright is dedicated to the Public Domain.
@@ -22,6 +22,6 @@ void operatorControl() {
 	while (true) {
 		controlAll();
 		updateSlewController();
-		delay(10);
+		delay(1);
 	}
 }

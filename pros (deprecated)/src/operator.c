@@ -1,5 +1,6 @@
 #include "operator.h"
 
+bool isSkillsChallenge = true;
 void controlBaseJoystick() {
 	int leftSpeed = joystickGetAnalog(1, 3);
 	int rightSpeed = joystickGetAnalog(1, 2);
@@ -12,18 +13,46 @@ void controlBaseJoystick() {
 }
 
 void controlIntakeJoystick() {
-	if(joystickGetDigital(1, 7, JOY_UP)) {
-		setMotorSpeed(0, 127);
-	}
-	else if(joystickGetDigital(1, 7, JOY_DOWN)) {
-		setMotorSpeed(0, -127);
+	if(isSkillsChallenge) {
+		if(joystickGetDigital(1, 5, JOY_UP)) {
+			setMotorSpeed(0, 127);
+		}
+		else if(joystickGetDigital(1, 5, JOY_DOWN)) {
+			setMotorSpeed(0, -127);
+		}
+		else {
+			setMotorSpeed(0, 0);
+		}
 	}
 	else {
-		setMotorSpeed(0, 0);
+		if(joystickGetDigital(1, 7, JOY_UP)) {
+			setMotorSpeed(0, 127);
+		}
+		else if(joystickGetDigital(1, 7, JOY_DOWN)) {
+			setMotorSpeed(0, -127);
+		}
+		else {
+			setMotorSpeed(0, 0);
+		}
 	}
 }
 
 void controlLiftJoystick() {
+	if(isSkillsChallenge) {
+		if(joystickGetDigital(1, 6, JOY_UP)) {
+			setMotorSpeed(4, 127);
+			setMotorSpeed(6, 127);
+		}
+		else if(joystickGetDigital(1, 6, JOY_DOWN)) {
+			setMotorSpeed(4, -127);
+			setMotorSpeed(6, -127);
+		}
+		else {
+			setMotorSpeed(4, 0);
+			setMotorSpeed(6, 0);
+		}
+	}
+	else {
 		if(joystickGetDigital(1, 5, JOY_UP)) {
 			setMotorSpeed(4, 127);
 			setMotorSpeed(6, 127);
@@ -36,12 +65,15 @@ void controlLiftJoystick() {
 			setMotorSpeed(4, 0);
 			setMotorSpeed(6, 0);
 		}
+	}
 }
 
 void controlAll() {
   controlBaseJoystick();
   controlLiftJoystick();
   controlIntakeJoystick();
+	if(!isSkillsChallenge) {
   //controlChainBarJoystick();
   //controlClawJoystick();
+	}
 }

@@ -1,5 +1,6 @@
 #include "main.h"
 #include "lcd.h"
+#define LCD_PORT uart2
 bool buttonPressed[3] = {false, false, false};
 bool buttonNewStates[3] = {false, false, false};
 bool buttonDown[3] = {false, false, false};
