@@ -1,15 +1,14 @@
-#pragma config(Sensor, dgtl1, leftWheelsEncoder, sensorQuadEncoder)
-#pragma config(Sensor, dgtl3, rightWheelsEncoder, sensorQuadEncoder)
-#pragma config(Sensor, dgtl5, liftEncoder, sensorQuadEncoder)
-#pragma config(Sensor, dgtl7, chainBarEncoder, sensorQuadEncoder)
-#pragma config(Motor, port1, intake, tmotorVex393_HBridge, openLoop)
-#pragma config(Motor, port3, rightWheels, tmotorVex393_MC29, openLoop)
-#pragma config(Motor, port5, leftLift, tmotorVex393_MC29, openLoop)
-#pragma config(Motor, port6, chainBar, tmotorVex393_MC29, openLoop)
-#pragma config(Motor, port7, rightLift, tmotorVex393_MC29, openLoop)
-#pragma config(Motor, port8, leftWheels, tmotorVex393_MC29, openLoop)
-#pragma config(Motor, port9, claw, tmotorVex393_MC29, openLoop)
-
+#pragma config(Sensor, dgtl1,  leftWheelsEncoder, sensorQuadEncoder)
+#pragma config(Sensor, dgtl3,  rightWheelsEncoder, sensorQuadEncoder)
+#pragma config(Sensor, dgtl5,  chainBarEncoder, sensorQuadEncoder)
+#pragma config(Sensor, dgtl7,  liftEncoder,    sensorQuadEncoder)
+#pragma config(Motor,  port1,           intake,        tmotorVex393_HBridge, openLoop)
+#pragma config(Motor,  port3,           rightWheels,   tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port4,           claw,          tmotorVex393_MC29, openLoop, reversed)
+#pragma config(Motor,  port5,           leftLift,      tmotorVex393_MC29, openLoop, reversed)
+#pragma config(Motor,  port6,           chainBar,      tmotorVex393_MC29, openLoop, reversed)
+#pragma config(Motor,  port7,           rightLift,     tmotorVex393_MC29, openLoop, reversed)
+#pragma config(Motor,  port8,           leftWheels,    tmotorVex393_MC29, openLoop)
 float wheelMult = 360.0 / (3.1415926 * 10.16); //360l / 3.14*D
 task main()
 {
@@ -44,6 +43,23 @@ task main()
 			writeDebugStream(rotValue);
 			writeDebugStream(", false);\n");
 		}
+		if(vexRT[Btn5D] == 1) {
+			while (vexRT[Btn5D] != 0)
+			{
+				delay(10);
+			}
+			char chainValue[100];
+			char rotValue[100];
+			char leftValue[100];
+			char rightValue[100];
+			sprintf(chainValue, "%d", SensorValue[chainBarEncoder]);
+			sprintf(rotValue, "%d", SensorValue[liftEncoder]);
+			writeDebugStream("calculateMovementsWithoutBase(");
+			writeDebugStream(chainValue);
+			writeDebugStream(", ");
+			writeDebugStream(rotValue);
+			writeDebugStream(", false);\n");
+		}
 		if (vexRT[Btn6U] == 1)
 		{
 			while (vexRT[Btn6U] != 0)
@@ -68,7 +84,7 @@ task main()
 			{
 				delay(10);
 			}
-			writeDebugStream("claw_up();\n");
+			writeDebugStream("claw_in();\n");
 		}
 
 		if (vexRT[Btn7D] == 1)
@@ -77,7 +93,7 @@ task main()
 			{
 				delay(10);
 			}
-			writeDebugStream("claw_down();\n");
+			writeDebugStream("delay(200); claw_out();\n");
 		}
 	}
 }
