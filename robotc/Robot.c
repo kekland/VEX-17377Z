@@ -3,7 +3,8 @@
 #pragma config(Sensor, dgtl5,  chainBarEncoder, sensorQuadEncoder)
 #pragma config(Sensor, dgtl7,  liftEncoder,    sensorQuadEncoder)
 #pragma config(Sensor, dgtl9,  intakeDownBtn,  sensorTouch)
-#pragma config(Motor,  port3,           rightWheels,   tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port2,           rightWheels1,  tmotorNone, openLoop)
+#pragma config(Motor,  port3,           rightWheels2,  tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port4,           claw,          tmotorVex393_MC29, openLoop, reversed)
 #pragma config(Motor,  port5,           leftLift,      tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port6,           chainBar,      tmotorVex393_MC29, openLoop, reversed)
@@ -18,9 +19,10 @@
 #include "Vex_Competition_Includes.c"
 
 
-//Function that is used to show two lines of text on LCD
 string savedL1; //Saved variable for first line of text
 string savedL2; //Saved variable for the second line of text
+
+//Function that is used to show two lines of text on LCD
 void show_page(char *l1, char *l2)
 {
 	//If we have new data on first line - replace it with the new one
@@ -167,7 +169,7 @@ int motor_desired[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 bool motor_slew_rate_enabled[10] = {false, true, true, true, true, true, true, true, true, false};
 bool motor_slew_rate_enabled_global = true; //Is the Slew Rate Controller enabled globally
 int slew_rate_step = 2; //How much speed to add with each iteration
-int slew_rate_delay = 10; //Delay between each iteration
+int slew_rate_delay = 5; //Delay between each iteration
 
 task slew_rate()
 {
@@ -234,7 +236,13 @@ void set_motor(int pin, int speed)
 	}
 
 	//Set the motor speed
-	motor_desired[pin] = speed * motor_multiplier[pin];
+	if(pin == rightWheels1 || pin == rightWheels2) {
+		motor_desired[rightWheels1] = speed * motor_multiplier[rightWheels1];
+		motor_desired[rightWheels2] = speed * motor_multiplier[rightWheels2];
+	}
+	else {
+		motor_desired[pin] = speed * motor_multiplier[pin];
+	}
 	//motor[pin] = speed * motor_multiplier[pin];
 }
 
@@ -341,19 +349,19 @@ void calculateMovementsBase(float wheelLeftDesired, float wheelRightDesired, boo
 	{
 		//Move with PID controller
 		wheelLeftError = moveToDesiredPID(leftWheels, SensorValue[leftWheelsEncoder], (int)(wheelLeftDesired * wheelMult), 3, -1, wheelLeftError, 0.5);
-		wheelRightError = moveToDesiredPID(rightWheels, -SensorValue[rightWheelsEncoder], (int)(wheelRightDesired * wheelMult), 3, -1, wheelRightError, 0.5);
+		wheelRightError = moveToDesiredPID(rightWheels1, SensorValue[rightWheelsEncoder], (int)(wheelRightDesired * wheelMult), 3, -1, wheelRightError, 0.5);
 
 		//If we are close to our target - stop and return
 		if (abs(wheelLeftError) < PID_DELTA || abs(wheelRightError) < PID_DELTA)	{
 			set_motor(leftWheels, 0);
-			set_motor(rightWheels, 0);
+			set_motor(rightWheels1, 0);
 			break;
 		}
 		delay(PID_ITER_DELAY);
 	}
 	//Stop motors
 	set_motor(leftWheels, 0);
-	set_motor(rightWheels, 0);
+			set_motor(rightWheels1, 0);
 }
 
 //This function calculates the movements for lift and chainbar
@@ -362,14 +370,14 @@ void calculateMovementsWithoutBase(int chainDesired, int liftDesired, bool reset
 	//If we need to reset encoders - reset them
 	if (resetEnc)
 	{
-		SensorValue[liftEncoder] = 0;
-		SensorValue[chainBarEncoder] = 0;
+		//SensorValue[liftEncoder] = 0;
+		//SensorValue[chainBarEncoder] = 0;
 	}
 	while (true)
 	{
 		//Move with P controller
-		bool cb = moveToDesired(chainBar, SensorValue[chainBarEncoder], chainDesired, -1, 3.0, 10.0);
-		bool lf = moveToDesired(leftLift, SensorValue[liftEncoder], liftDesired, rightLift, 5.0, 2.5);
+		bool cb = moveToDesired(chainBar, SensorValue[chainBarEncoder], chainDesired, -1, 3.0, 15.0);
+		bool lf = moveToDesired(leftLift, SensorValue[liftEncoder], liftDesired, rightLift, 4.0, 6.5);
 
 		//If we have finished or we need to cancel our moves (with 7R button) - stop
 		if(vexRT[Btn7R] || (cb && lf)) {
@@ -387,6 +395,7 @@ void calculateMovementsWithoutBase(int chainDesired, int liftDesired, bool reset
 	set_motor(chainBar, 0);
 	set_motor(leftLift, 0);
 	set_motor(rightLift, 0);
+	delay(100);
 }
 
 //This function releases the intake from drivetrain (to get the mobile goal)
@@ -409,11 +418,11 @@ void intake_down_forward(int spd = 60)
 	while(SensorValue[intakeDownBtn] == 0) {
 		set_motor(intake, 127);
 		set_motor(leftWheels, spd);
-		set_motor(rightWheels, spd);
+		set_motor(rightWheels1, spd);
 	}
 	//Stop
 	set_motor(leftWheels, 0);
-	set_motor(rightWheels, 0);
+	set_motor(rightWheels1, 0);
 	set_motor(intake, 0);
 }
 
@@ -426,16 +435,16 @@ void intake_20pt()
 	//Shake the drivetrain so mobile goal will fall out from it
 	set_motor(intake, 0);
 	set_motor(leftWheels, 127);
-	set_motor(rightWheels, 127);
+	set_motor(rightWheels1, 127);
 	delay(700);
 	set_motor(leftWheels, -127);
-	set_motor(rightWheels, -127);
+	set_motor(rightWheels1, -127);
 	delay(500);
 	set_motor(leftWheels, 127);
-	set_motor(rightWheels, 127);
+	set_motor(rightWheels1, 127);
 	delay(500);
 	set_motor(leftWheels, -127);
-	set_motor(rightWheels, -127);
+	set_motor(rightWheels1, -127);
 }
 
 //This function gets the intake into drivetrain
@@ -466,14 +475,14 @@ task keepLiftUp()
 //This function sucks the cone into the rollers
 void claw_in() {
 	set_motor(claw, 127); //Grab the cone
-	delay(200);
+	delay(300);
 	set_motor(claw, 60); //Keep small amount of power on motor to keep cone from falling
 }
 
 //This function sucks the cone out of the rollers
 void claw_out() {
 	set_motor(claw, -127); //Release the cone
-	delay(200);
+	delay(300);
 	set_motor(claw, 0);
 }
 
@@ -504,7 +513,7 @@ task autonomous()
 	SensorValue[chainBarEncoder] = 0;
 
 	//Start the slew rate controller
-	startTask(slew_rate);
+	startTask(slew_rate, kHighPriority);
 
 	//If we somehow did not select our autonomous - do nothing
 	if (selected_autonomous == -1)
@@ -651,7 +660,7 @@ void control_base()
 
 	//Set motors
 	set_motor(leftWheels, leftJoy);
-	set_motor(rightWheels, rightJoy);
+	set_motor(rightWheels1, rightJoy);
 }
 
 //This function controls the intake
@@ -673,7 +682,7 @@ void control_lift()
 void control_chain_bar()
 {
 	//Control the chainbar
-	set_motor(chainBar, get_joystick_button_direction(Btn6U, Btn6D) * -127);
+	set_motor(chainBar, get_joystick_button_direction(Btn6U, Btn6D) * 127);
 }
 
 //Variable that checks if match loads algorithm is running or not
@@ -724,7 +733,7 @@ void control_cones() {
 void dunk_matchloads(int cc)
 {
 	//While we are not on target position - move downwards
-	while (abs((int)(cc * 7) - 1 - SensorValue[liftEncoder]) > 3 && !vexRT[Btn7LXmtr2])
+	while (abs((int)(cc * 7) - 1 - SensorValue[liftEncoder]) > 5 && !vexRT[Btn7LXmtr2])
 	{
 		set_motor(leftLift, -127);
 		set_motor(rightLift, -127);
@@ -733,33 +742,69 @@ void dunk_matchloads(int cc)
 	set_motor(leftLift, 0);
 	set_motor(rightLift, 0);
 	delay(300);
-	claw_out();
+	set_motor(claw, -127);
+	delay(450);
 }
 
+task keep_position() {
+	SensorValue[leftWheelsEncoder] = 0;
+	SensorValue[rightWheelsEncoder] = 0;
+
+	int wheelLeftError = 0, wheelRightError = 0; //These variables contain the error for left and right wheels
+	while (true)
+	{
+		//Move with PID controller
+		wheelLeftError = moveToDesiredPID(leftWheels, SensorValue[leftWheelsEncoder], 0, 3, -1, wheelLeftError, 0.5);
+		wheelRightError = moveToDesiredPID(rightWheels1, SensorValue[rightWheelsEncoder], 0, 3, -1, wheelRightError, 0.5);
+
+		delay(PID_ITER_DELAY);
+	}
+	//Stop motors
+	set_motor(leftWheels, 0);
+	set_motor(rightWheels1, 0);
+}
 void control_matchloads() {
 	//If we press the 7R button on partner joystick
 	if(vexRT[Btn7RXmtr2]) {
 		while(vexRT[Btn7RXmtr2]) { delay(10); } //Wait for its release
+		startTask(keep_position);
 		ml_running = true; //Set that we are running the match loads
 		motor_slew_rate_enabled_global = false; //Disable the Slew Rate controller
 
 		//Do everything automatically
 		while(current_cone < 10 && !vexRT[Btn7LXmtr2]) {
-			int height = 24; //Calculate the maximum desired height for each cone
-			if(current_cone > 2) {
-				height += (current_cone - 2) * 7;
-			}
-			calculateMovementsWithoutBase(0, height, false);	 //Raise the lift up to max. height and keep the chain bar vertical
+			/*calculateMovementsWithoutBase(0, height, false);	 //Raise the lift up to max. height and keep the chain bar vertical
 			calculateMovementsWithoutBase(-74, height, false); //While keeping the lift up to max. make chain bar horizontal
-			calculateMovementsWithoutBase(-74, 24, false);		 //Move to matchloads height while keeping the chain bar horizontal
+			calculateMovementsWithoutBase(-74, 25, false);		 //Move to matchloads height while keeping the chain bar horizontal
+			delay(200);
 			claw_in();																				 //Get the cone
 			calculateMovementsWithoutBase(-74, height, false); //Move back to max. height with chain bar being horizontal
 			calculateMovementsWithoutBase(0, height, false);	 //Make chain bar vertical while keeping the max. height
 			dunk_matchloads(current_cone);										 //Perform dunk
-			current_cone++;																		 //Increment the cone counter
+			current_cone++;										//Increment the cone counter*/
+			int height = 25;
+			if(8 + (int)((current_cone) * 6.5) > height) {
+				height = 10 + (int)((current_cone) * 6.5);
+			}
+			calculateMovementsWithoutBase(-10, height, false);
+			calculateMovementsWithoutBase(-76, height, false);
+			while(SensorValue[liftEncoder] > 24) {
+				set_motor(leftLift, -90);
+				set_motor(rightLift, -90);
+				set_motor(claw, 80);
+			}
+			set_motor(leftLift, 0);
+			set_motor(rightLift, 0);
+			claw_in();
+			calculateMovementsWithoutBase(-76, height, false);
+			calculateMovementsWithoutBase(-10, height, false);
+			dunk_matchloads(current_cone);
+			delay(250);
+			current_cone++;
 		}
 		ml_running = false; //Disable the match loads
 		motor_slew_rate_enabled = true; //Enable the slew rate controller
+		stopTask(keep_position);
 	}
 }
 
@@ -771,18 +816,18 @@ void control_autostack() {
 		}
 		motor_slew_rate_enabled_global = false;																		//Disable the slew rate controller
 		claw_in();																																//Get the cone
-		calculateMovementsWithoutBase(-85, 9 + (int)(current_cone * 6.5), false); //While keeping the chainbar horizontal raise up to max. height
+		calculateMovementsWithoutBase(-85, 11 + (int)(current_cone * 6.5), false); //While keeping the chainbar horizontal raise up to max. height
 		set_motor(claw, 60);																											//Keep the claw pulling the cone inwards
-		calculateMovementsWithoutBase(-5, 9 + (int)(current_cone * 6.5), false);	//Make the chainbar vertical while keeping the max.height
+		calculateMovementsWithoutBase(-10, 10 + (int)(current_cone * 6.5), false);	//Make the chainbar vertical while keeping the max.height
 		delay(250);
 		dunk_matchloads(current_cone);																					  //Perform dunk
 		current_cone++;																														//Increment the cone counter
 		set_motor(claw, -127);																										//Keep the claw pushing the cones outwards
-		calculateMovementsWithoutBase(-5, 9 + (int)(current_cone * 6.5), false);	//Move lift to max.height while keeping the chainbar vertical
+		calculateMovementsWithoutBase(-10, 9 + (int)(current_cone * 6.5), false);	//Move lift to max.height while keeping the chainbar vertical
 		set_motor(claw, -127);																										//Keep the claw pushing the cones outwards
-		calculateMovementsWithoutBase(-85, 9 + (int)(current_cone * 6.5), false); //Move chainbar to horizontal position
+		calculateMovementsWithoutBase(-85, 10 + (int)(current_cone * 6.5), false); //Move chainbar to horizontal position
 		set_motor(claw, 0);																												//Release the claw
-		calculateMovementsWithoutBase(-85, 9, false);															//Move lift downwards
+		calculateMovementsWithoutBase(-85, 0, false);															//Move lift downwards
 		delay(250);
 		stopAll();
 		motor_slew_rate_enabled_global = true; 																		//Enable slew rate controller
@@ -808,6 +853,6 @@ task usercontrol()
 		control_chain_bar();
 		control_claw();
 
-		delay(10);
+		delay(5);
 	}
 }
